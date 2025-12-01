@@ -1,0 +1,20 @@
+{
+  "name": "chatbot-frontend",
+  "version": "1.0.0",
+  "description": "Frontend interface for AI Chatbot Platform",
+  "main": "index.html",
+  "scripts": {
+    "serve": "python3 server.py",
+    "dev": "python3 server.py"
+  },
+  "keywords": ["chatbot", "ai", "frontend", "web"],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
+

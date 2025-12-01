@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-robot"></i> AI Agents</h2>
+            </div>
+            <div class="agents-list" id="agents-list">
+                <!-- Agents will be loaded here -->
+            </div>
+            <div class="sidebar-footer">
+                <button id="refresh-agents" class="btn-secondary">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="main-chat">
+            <div class="chat-header">
+                <div class="agent-info">
+                    <div class="agent-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="agent-details">
+                        <h3 id="current-agent-name">Select an Agent</h3>
+                        <p id="current-agent-desc">Choose an AI agent to start chatting</p>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <button id="clear-chat" class="btn-secondary">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <button id="toggle-theme" class="btn-secondary">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <div class="welcome-message">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Welcome to the AI Chatbot Platform! Select an agent from the sidebar to start a conversation.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="input-container">
+                    <textarea
+                        id="message-input"
+                        placeholder="Type your message here..."
+                        rows="1"
+                        disabled
+                    ></textarea>
+                    <button id="send-button" class="send-button" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-footer">
+                    <span id="status-text">Select an agent to start chatting</span>
+                    <div class="typing-indicator" id="typing-indicator" style="display: none;">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversation History Sidebar -->
+        <div class="conversation-sidebar">
+            <div class="conversation-header">
+                <h3><i class="fas fa-history"></i> Conversations</h3>
+                <button id="refresh-conversations" class="btn-icon">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+            <div class="conversations-list" id="conversations-list">
+                <!-- Conversations will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for conversation details -->
+    <div id="conversation-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Conversation Details</h3>
+                <button id="close-modal" class="close-button">&times;</button>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <!-- Conversation details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
