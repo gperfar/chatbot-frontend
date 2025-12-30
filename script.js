@@ -6,6 +6,7 @@ const API_BASE_URL = 'https://chatbot-ai-vyff.onrender.com/api';
 let currentAgent = null;
 let currentConversationId = null;
 let isTyping = false;
+let developerMode = false;
 
 // DOM elements
 const agentsList = document.getElementById('agents-list');
@@ -21,6 +22,8 @@ const refreshAgentsBtn = document.getElementById('refresh-agents');
 const refreshConversationsBtn = document.getElementById('refresh-conversations');
 const clearChatBtn = document.getElementById('clear-chat');
 const toggleThemeBtn = document.getElementById('toggle-theme');
+const toggleDeveloperBtn = document.getElementById('toggle-developer');
+const conversationSidebar = document.querySelector('.conversation-sidebar');
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
@@ -28,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadAgents();
     loadConversations();
     setupMessageInput();
+    initializeDeveloperMode();
 });
 
 // Setup event listeners
@@ -38,6 +42,7 @@ function setupEventListeners() {
     refreshConversationsBtn.addEventListener('click', loadConversations);
     clearChatBtn.addEventListener('click', clearChat);
     toggleThemeBtn.addEventListener('click', toggleTheme);
+    toggleDeveloperBtn.addEventListener('click', toggleDeveloperMode);
 }
 
 // Setup message input auto-resize
@@ -219,7 +224,11 @@ function displayConversation(conversation) {
     chatMessages.innerHTML = '';
 
     conversation.messages.forEach(message => {
-        addMessageToChat(message.role, message.content);
+        // In normal mode, only show user and assistant messages
+        // In developer mode, show all messages
+        if (developerMode || message.role === 'user' || message.role === 'assistant') {
+            addMessageToChat(message.role, message.content);
+        }
     });
 
     // Update header with agent info if available
@@ -297,11 +306,29 @@ function addMessageToChat(role, content) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${role}`;
 
+    // Get appropriate icon based on role and developer mode
+    let iconClass = 'fa-robot'; // default
+    if (role === 'user') {
+        iconClass = 'fa-user';
+    } else if (role === 'assistant') {
+        iconClass = 'fa-robot';
+    } else if (role === 'system') {
+        iconClass = 'fa-cog';
+    } else if (role === 'tool') {
+        iconClass = 'fa-wrench';
+    } else if (role === 'function') {
+        iconClass = 'fa-code';
+    }
+
+    // Show role label in developer mode
+    const roleLabel = developerMode ? `<div class="message-role">${role}</div>` : '';
+
     messageDiv.innerHTML = `
         <div class="message-avatar">
-            <i class="fas ${role === 'user' ? 'fa-user' : 'fa-robot'}"></i>
+            <i class="fas ${iconClass}"></i>
         </div>
         <div class="message-content">
+            ${roleLabel}
             <p>${formatMessage(content)}</p>
         </div>
     `;
@@ -412,6 +439,54 @@ function showSuccess(message) {
             statusText.textContent = 'Ready to chat';
         }
     }, 3000);
+}
+
+// Initialize developer mode
+function initializeDeveloperMode() {
+    const savedDeveloperMode = localStorage.getItem('developerMode') === 'true';
+    developerMode = savedDeveloperMode;
+    updateDeveloperModeUI();
+}
+
+// Toggle developer mode with password protection
+function toggleDeveloperMode() {
+    if (developerMode) {
+        // If already in developer mode, disable it
+        developerMode = false;
+        localStorage.setItem('developerMode', 'false');
+        updateDeveloperModeUI();
+        showSuccess('Developer mode disabled');
+    } else {
+        // Prompt for password to enable developer mode
+        const password = prompt('Enter developer password:');
+        if (password === 'mellon') {
+            developerMode = true;
+            localStorage.setItem('developerMode', 'true');
+            updateDeveloperModeUI();
+            showSuccess('Developer mode enabled');
+        } else {
+            showError('Incorrect password');
+        }
+    }
+}
+
+// Update UI based on developer mode state
+function updateDeveloperModeUI() {
+    toggleDeveloperBtn.innerHTML = developerMode ?
+        '<i class="fas fa-code"></i>' :
+        '<i class="fas fa-lock"></i>';
+
+    toggleDeveloperBtn.classList.toggle('active', developerMode);
+
+    // Show/hide conversation sidebar
+    if (conversationSidebar) {
+        conversationSidebar.style.display = developerMode ? 'flex' : 'none';
+    }
+
+    // Reload current conversation to apply message filtering
+    if (currentConversationId) {
+        loadConversation(currentConversationId);
+    }
 }
 
 // Initialize theme on load
