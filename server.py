@@ -16,14 +16,6 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(DIRECTORY), **kwargs)
 
-    def do_GET(self):
-        # Handle conversation viewer routes
-        if self.path.startswith('/conversations/'):
-            # Serve index.html for conversation viewer URLs
-            self.path = '/index.html'
-
-        return super().do_GET()
-
     def end_headers(self):
         # Add CORS headers for API calls
         self.send_header('Access-Control-Allow-Origin', '*')

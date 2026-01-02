@@ -34,6 +34,9 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeViewerMode();
     initializeDeveloperMode();
 
+    // Listen for hash changes (for browser back/forward navigation)
+    window.addEventListener('hashchange', handleHashChange);
+
     if (!viewerMode) {
         loadAgents();
         loadConversations();
@@ -52,7 +55,16 @@ function setupEventListeners() {
     clearChatBtn.addEventListener('click', clearChat);
     toggleThemeBtn.addEventListener('click', toggleTheme);
     toggleDeveloperBtn.addEventListener('click', toggleDeveloperMode);
-    backToChatBtn.addEventListener('click', () => window.location.href = '/');
+    backToChatBtn.addEventListener('click', () => {
+        window.location.hash = '';
+        viewerMode = false;
+        viewerConversationId = null;
+        updateViewerModeUI();
+        clearChat();
+        loadAgents();
+        loadConversations();
+        setupMessageInput();
+    });
 }
 
 // Setup message input auto-resize
@@ -214,7 +226,7 @@ function createConversationElement(conversation) {
     `;
 
     convDiv.addEventListener('click', () => {
-        window.location.href = `/conversations/${conversation.id}`;
+        window.location.hash = `conversation/${conversation.id}`;
     });
     return convDiv;
 }
@@ -455,8 +467,8 @@ function showSuccess(message) {
 
 // Initialize viewer mode
 function initializeViewerMode() {
-    const path = window.location.pathname;
-    const viewerMatch = path.match(/^\/conversations\/(\d+)$/);
+    const hash = window.location.hash;
+    const viewerMatch = hash.match(/^#conversation\/(\d+)$/);
 
     if (viewerMatch) {
         viewerMode = true;
@@ -487,6 +499,31 @@ async function loadViewerConversation() {
         loadConversations();
         setupMessageInput();
     }
+}
+
+// Handle hash changes for navigation
+function handleHashChange() {
+    const wasViewerMode = viewerMode;
+    viewerMode = false;
+    viewerConversationId = null;
+
+    initializeViewerMode(); // Re-check the hash
+
+    if (wasViewerMode && !viewerMode) {
+        // Exited viewer mode, reload the main interface
+        clearChat();
+        loadAgents();
+        loadConversations();
+        setupMessageInput();
+    } else if (!wasViewerMode && viewerMode) {
+        // Entered viewer mode
+        loadViewerConversation();
+    } else if (viewerMode && wasViewerMode && viewerConversationId !== currentConversationId) {
+        // Different conversation in viewer mode
+        loadViewerConversation();
+    }
+
+    updateViewerModeUI();
 }
 
 // Update UI for viewer mode
