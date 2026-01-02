@@ -307,6 +307,16 @@ body {
     color: white;
 }
 
+/* Viewer mode styles */
+.container.viewer-mode {
+    grid-template-columns: 1fr;
+}
+
+.container.viewer-mode .main-chat {
+    border-left: none;
+    border-right: none;
+}
+
 .welcome-message {
     display: flex;
     gap: 0.75rem;

@@ -7,6 +7,8 @@ let currentAgent = null;
 let currentConversationId = null;
 let isTyping = false;
 let developerMode = false;
+let viewerMode = false;
+let viewerConversationId = null;
 
 // DOM elements
 const agentsList = document.getElementById('agents-list');
@@ -23,15 +25,22 @@ const refreshConversationsBtn = document.getElementById('refresh-conversations')
 const clearChatBtn = document.getElementById('clear-chat');
 const toggleThemeBtn = document.getElementById('toggle-theme');
 const toggleDeveloperBtn = document.getElementById('toggle-developer');
+const backToChatBtn = document.getElementById('back-to-chat');
 const conversationSidebar = document.querySelector('.conversation-sidebar');
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
-    loadAgents();
-    loadConversations();
-    setupMessageInput();
+    initializeViewerMode();
     initializeDeveloperMode();
+
+    if (!viewerMode) {
+        loadAgents();
+        loadConversations();
+        setupMessageInput();
+    } else {
+        loadViewerConversation();
+    }
 });
 
 // Setup event listeners
@@ -43,6 +52,7 @@ function setupEventListeners() {
     clearChatBtn.addEventListener('click', clearChat);
     toggleThemeBtn.addEventListener('click', toggleTheme);
     toggleDeveloperBtn.addEventListener('click', toggleDeveloperMode);
+    backToChatBtn.addEventListener('click', () => window.location.href = '/');
 }
 
 // Setup message input auto-resize
@@ -203,7 +213,9 @@ function createConversationElement(conversation) {
         </div>
     `;
 
-    convDiv.addEventListener('click', () => loadConversation(conversation.id));
+    convDiv.addEventListener('click', () => {
+        window.location.href = `/conversations/${conversation.id}`;
+    });
     return convDiv;
 }
 
@@ -224,9 +236,9 @@ function displayConversation(conversation) {
     chatMessages.innerHTML = '';
 
     conversation.messages.forEach(message => {
-        // In normal mode, only show user and assistant messages
-        // In developer mode, show all messages
-        if (developerMode || message.role === 'user' || message.role === 'assistant') {
+        // In viewer mode, show all messages regardless of developer mode
+        // In normal mode, only show user and assistant messages unless developer mode is on
+        if (viewerMode || developerMode || message.role === 'user' || message.role === 'assistant') {
             addMessageToChat(message.role, message.content);
         }
     });
@@ -439,6 +451,90 @@ function showSuccess(message) {
             statusText.textContent = 'Ready to chat';
         }
     }, 3000);
+}
+
+// Initialize viewer mode
+function initializeViewerMode() {
+    const path = window.location.pathname;
+    const viewerMatch = path.match(/^\/conversations\/(\d+)$/);
+
+    if (viewerMatch) {
+        viewerMode = true;
+        viewerConversationId = parseInt(viewerMatch[1]);
+        updateViewerModeUI();
+    }
+}
+
+// Load conversation for viewer mode
+async function loadViewerConversation() {
+    try {
+        const data = await apiRequest(`/conversations/${viewerConversationId}`);
+        displayConversation(data);
+        currentConversationId = viewerConversationId;
+
+        // Update header
+        if (data.agent_name) {
+            currentAgentName.textContent = data.agent_name;
+            currentAgentDesc.textContent = `Conversation #${data.id}`;
+        }
+    } catch (error) {
+        console.error('Failed to load conversation for viewer:', error);
+        showError('Failed to load conversation');
+        // Fallback to normal mode if conversation not found
+        viewerMode = false;
+        updateViewerModeUI();
+        loadAgents();
+        loadConversations();
+        setupMessageInput();
+    }
+}
+
+// Update UI for viewer mode
+function updateViewerModeUI() {
+    const agentSidebar = document.querySelector('.sidebar');
+    const conversationSidebar = document.querySelector('.conversation-sidebar');
+    const chatInputArea = document.querySelector('.chat-input-area');
+    const chatActions = document.querySelector('.chat-actions');
+
+    if (viewerMode) {
+        // Hide agent sidebar, conversation sidebar, and input area
+        if (agentSidebar) agentSidebar.style.display = 'none';
+        if (conversationSidebar) conversationSidebar.style.display = 'none';
+        if (chatInputArea) chatInputArea.style.display = 'none';
+
+        // Hide developer mode and clear chat buttons in viewer mode, show back button
+        const developerBtn = document.getElementById('toggle-developer');
+        const clearBtn = document.getElementById('clear-chat');
+        const backBtn = document.getElementById('back-to-chat');
+        if (developerBtn) developerBtn.style.display = 'none';
+        if (clearBtn) clearBtn.style.display = 'none';
+        if (backBtn) backBtn.style.display = 'inline-flex';
+
+        // Update main container layout for viewer
+        const container = document.querySelector('.container');
+        if (container) {
+            container.classList.add('viewer-mode');
+        }
+    } else {
+        // Show all elements in normal mode
+        if (agentSidebar) agentSidebar.style.display = 'flex';
+        if (conversationSidebar) conversationSidebar.style.display = developerMode ? 'flex' : 'none';
+        if (chatInputArea) chatInputArea.style.display = 'flex';
+
+        // Show buttons
+        const developerBtn = document.getElementById('toggle-developer');
+        const clearBtn = document.getElementById('clear-chat');
+        const backBtn = document.getElementById('back-to-chat');
+        if (developerBtn) developerBtn.style.display = 'inline-flex';
+        if (clearBtn) clearBtn.style.display = 'inline-flex';
+        if (backBtn) backBtn.style.display = 'none';
+
+        // Remove viewer mode class
+        const container = document.querySelector('.container');
+        if (container) {
+            container.classList.remove('viewer-mode');
+        }
+    }
 }
 
 // Initialize developer mode
