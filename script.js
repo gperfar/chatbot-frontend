@@ -134,6 +134,26 @@ function displayAgents(agents) {
     });
 }
 
+// Helper function to create agent avatar HTML
+function createAgentAvatarHTML(agent, size = 'normal') {
+    const avatarSize = size === 'large' ? '48px' : '40px';
+    const bgColor = agent.color || '#3b82f6';
+    
+    if (agent.avatar_url) {
+        return `
+            <div class="agent-avatar" style="background-color: ${bgColor}; width: ${avatarSize}; height: ${avatarSize};">
+                <img src="${agent.avatar_url}" alt="${agent.display_name}" class="agent-avatar-img" />
+            </div>
+        `;
+    } else {
+        return `
+            <div class="agent-avatar" style="background-color: ${bgColor}; width: ${avatarSize}; height: ${avatarSize};">
+                <i class="fas fa-robot"></i>
+            </div>
+        `;
+    }
+}
+
 // Create agent element
 function createAgentElement(agent) {
     const agentDiv = document.createElement('div');
@@ -141,9 +161,7 @@ function createAgentElement(agent) {
     agentDiv.dataset.agentId = agent.id;
 
     agentDiv.innerHTML = `
-        <div class="agent-avatar" style="background-color: ${agent.color || '#3b82f6'}">
-            <i class="fas fa-robot"></i>
-        </div>
+        ${createAgentAvatarHTML(agent, 'normal')}
         <div class="agent-info">
             <h4>${agent.display_name}</h4>
             <p>${agent.description || 'AI assistant'}</p>
@@ -167,6 +185,19 @@ function selectAgent(agent) {
     // Update header
     currentAgentName.textContent = agent.display_name;
     currentAgentDesc.textContent = agent.description || 'AI assistant';
+    
+    // Update header avatar
+    const headerAvatar = document.querySelector('.agent-info .agent-avatar');
+    if (headerAvatar) {
+        const bgColor = agent.color || '#3b82f6';
+        if (agent.avatar_url) {
+            headerAvatar.innerHTML = `<img src="${agent.avatar_url}" alt="${agent.display_name}" class="agent-avatar-img" />`;
+            headerAvatar.style.backgroundColor = bgColor;
+        } else {
+            headerAvatar.innerHTML = '<i class="fas fa-robot"></i>';
+            headerAvatar.style.backgroundColor = bgColor;
+        }
+    }
 
     // Enable input
     messageInput.disabled = false;
@@ -243,6 +274,21 @@ async function loadConversation(conversationId) {
     }
 }
 
+// Helper function to update header avatar
+function updateHeaderAvatar(agent) {
+    const headerAvatar = document.querySelector('.agent-info .agent-avatar');
+    if (headerAvatar && agent) {
+        const bgColor = agent.color || '#3b82f6';
+        if (agent.avatar_url) {
+            headerAvatar.innerHTML = `<img src="${agent.avatar_url}" alt="${agent.display_name || 'Agent'}" class="agent-avatar-img" />`;
+            headerAvatar.style.backgroundColor = bgColor;
+        } else {
+            headerAvatar.innerHTML = '<i class="fas fa-robot"></i>';
+            headerAvatar.style.backgroundColor = bgColor;
+        }
+    }
+}
+
 // Display conversation in chat
 function displayConversation(conversation) {
     chatMessages.innerHTML = '';
@@ -267,6 +313,19 @@ function displayConversation(conversation) {
     if (conversation.agent_name) {
         currentAgentName.textContent = conversation.agent_name;
         currentAgentDesc.textContent = `Conversation #${conversation.id}`;
+        
+        // Update header avatar if conversation includes avatar_url
+        if (conversation.agent_avatar_url || conversation.avatar_url) {
+            const headerAvatar = document.querySelector('.agent-info .agent-avatar');
+            if (headerAvatar) {
+                const bgColor = conversation.agent_color || '#3b82f6';
+                headerAvatar.innerHTML = `<img src="${conversation.agent_avatar_url || conversation.avatar_url}" alt="${conversation.agent_name}" class="agent-avatar-img" />`;
+                headerAvatar.style.backgroundColor = bgColor;
+            }
+        } else if (currentAgent && currentAgent.display_name === conversation.agent_name) {
+            // Use current agent's avatar if it matches
+            updateHeaderAvatar(currentAgent);
+        }
     }
 }
 
