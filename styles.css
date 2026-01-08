@@ -339,6 +339,11 @@ body {
     height: 100%;
 }
 
+.container.viewer-mode .conversation-sidebar,
+.container.viewer-mode .sidebar {
+    display: none !important;
+}
+
 .welcome-message {
     display: flex;
     gap: 0.75rem;
