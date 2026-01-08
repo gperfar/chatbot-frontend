@@ -248,10 +248,18 @@ function displayConversation(conversation) {
     chatMessages.innerHTML = '';
 
     conversation.messages.forEach(message => {
-        // In viewer mode, show all messages regardless of developer mode
+        // In viewer mode, only show user and assistant messages (for business users)
         // In normal mode, only show user and assistant messages unless developer mode is on
-        if (viewerMode || developerMode || message.role === 'user' || message.role === 'assistant') {
-            addMessageToChat(message.role, message.content);
+        if (viewerMode) {
+            // Viewer mode: only user and assistant
+            if (message.role === 'user' || message.role === 'assistant') {
+                addMessageToChat(message.role, message.content);
+            }
+        } else {
+            // Normal mode: show all if developer mode, otherwise only user and assistant
+            if (developerMode || message.role === 'user' || message.role === 'assistant') {
+                addMessageToChat(message.role, message.content);
+            }
         }
     });
 

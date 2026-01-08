@@ -310,11 +310,14 @@ body {
 /* Viewer mode styles */
 .container.viewer-mode {
     grid-template-columns: 1fr;
+    height: 100vh;
 }
 
 .container.viewer-mode .main-chat {
     border-left: none;
     border-right: none;
+    flex: 1;
+    height: 100%;
 }
 
 .welcome-message {
@@ -560,6 +563,27 @@ body {
 
     .conversation-sidebar {
         height: 40vh;
+    }
+
+    /* Viewer mode on mobile: full height */
+    .container.viewer-mode {
+        height: 100vh !important;
+        height: 100dvh; /* Use dynamic viewport height for mobile */
+    }
+
+    .container.viewer-mode .main-chat {
+        height: 100% !important;
+        flex: 1;
+        min-height: 0; /* Allow flexbox to work properly */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .container.viewer-mode .chat-messages {
+        flex: 1;
+        min-height: 0; /* Allow scrolling */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
 }
 
